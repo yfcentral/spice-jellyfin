@@ -36,7 +36,7 @@ mv /tmp/scripts-master/shell/arch/docker/*.sh /usr/local/bin/
 ####
 
 # define pacman packages
-pacman_packages="git libva-intel-driver intel-media-driver intel-media-sdk onevpl-intel-gpu intel-compute-runtime jellyfin-server jellyfin-ffmpeg"
+pacman_packages="git libva-intel-driver intel-media-driver intel-media-sdk onevpl-intel-gpu intel-compute-runtime jellyfin-server"
 
 # install compiled packages using pacman
 if [[ ! -z "${pacman_packages}" ]]; then
