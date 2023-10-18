@@ -1,4 +1,4 @@
-name: workflow-docker-manual
+name: docker-publish
 
 on:
   workflow_dispatch:
@@ -39,7 +39,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }} # NOTE: This MUST be the password NOT the token
-          repository: ${{ github.repository }}
+          repository: "yfcentral/spice-jellyfin"
           short-description: ${{ github.event.repository.description }}
       - name: DEBUG Show Runners environment
         uses: nick-fields/retry@v2
@@ -59,8 +59,7 @@ jobs:
       - name: Generate app name
         shell: bash
         run: |
-          echo "${GITHUB_REPOSITORY}"
-          echo ghcr.io/${{ github.repository }}:${{ steps.generate_temporary_tag_name.outputs.test_tag }}
+          echo ghcr.io/yfcentral/spice-jellyfin:${{ steps.generate_temporary_tag_name.outputs.test_tag }}
           app_name=$(echo "${GITHUB_REPOSITORY}" | grep -P -o -m 1 '(?<=/spice-).*')
           echo "[debug] Generated app name is '${app_name}'"
           echo "app_name=$app_name" >> $GITHUB_OUTPUT
@@ -70,7 +69,7 @@ jobs:
         with:
           context: .
           load: true
-          tags: ghcr.io/${{ github.repository }}:${{ steps.generate_temporary_tag_name.outputs.test_tag }}
+          tags: ghcr.io/yfcentral/spice-jellyfin:${{ steps.generate_temporary_tag_name.outputs.test_tag }}
           build-args: |
             RELEASETAG=${{ github.event.inputs.tags }}
       - name: Run tests using previously built image
@@ -79,7 +78,7 @@ jobs:
           git_clone_scripts_dest="/tmp/scripts"
           git_clone_scripts_repo="https://github.com/binhex/scripts.git"
           git clone "${git_clone_scripts_repo}" "${git_clone_scripts_dest}"
-          "${git_clone_scripts_dest}/shell/arch/docker/testrunner.sh" --app-name ${{ steps.generate_app_name.outputs.app_name }} --image-name "ghcr.io/${{ github.repository }}:${{ steps.generate_temporary_tag_name.outputs.test_tag }}"
+          "${git_clone_scripts_dest}/shell/arch/docker/testrunner.sh" --app-name ${{ steps.generate_app_name.outputs.app_name }} --image-name "ghcr.io/yfcentral/spice-jellyfin:${{ steps.generate_temporary_tag_name.outputs.test_tag }}"
       # note this will re-use the internal cached amd64 image from the previous build
       - name: Build multi-arch Docker image, tag and push to registries
         uses: docker/build-push-action@v5
@@ -87,6 +86,6 @@ jobs:
           context: .
           platforms: linux/amd64
           push: true
-          tags: ${{ github.repository }}:${{ github.event.inputs.tags }}, ghcr.io/${{ github.repository }}:${{ github.event.inputs.tags }}, registry.gitlab.com/${{ github.repository }}:${{ github.event.inputs.tags }}
+          tags: yfcentral/spice-jellyfin:${{ github.event.inputs.tags }}, ghcr.io/yfcentral/spice-jellyfin:${{ github.event.inputs.tags }}, registry.gitlab.com/yfcentral/spice-jellyfin:${{ github.event.inputs.tags }}
           build-args: |
             RELEASETAG=${{ github.event.inputs.tags }}
